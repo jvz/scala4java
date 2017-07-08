@@ -1,0 +1,516 @@
+\documentclass{beamer}
+
+\mode<presentation>
+{
+  \usetheme{Warsaw}
+}
+
+\usepackage{listings}
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+
+\title{Scala for Java Developers}
+\subtitle{The Scalable Language for Everyone}
+\author[Matt Sicker @jvz]{Matt Sicker \\ <\url{http://musigma.org/}>}
+\institute{SPR Consulting}
+\date{11 July 2017}
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+% end
+
+\begin{document}
+\lstset{language=Scala}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+%%% BASIC SYNTAX
+\section{Scala Syntax}
+
+%% EXPRESSIONS
+\subsection{Expressions}
+
+\begin{frame}[fragile]{Variables}
+\begin{itemize}
+\item Use \lstinline{val} for unmodifiable variables
+\item Use \lstinline{var} for modifiable variables
+\item There are very little restrictions on allowed characters in identifiers
+\item Use the \lstinline{_} variable as a throwaway variable
+\end{itemize}
+\begin{lstlisting}
+var foo = "bar" // foo is inferred to be a String
+foo = "baz" // can reassign vars
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Types}
+\begin{itemize}
+\item Types come after the variable name
+\item Variable types can oftentimes be inferred by the compiler
+\item All types descend from \lstinline{Any} and are all supertypes of \lstinline{Nothing}
+\item The \lstinline{AnyRef} class is an alias for \lstinline{java.lang.Object}
+\item The \lstinline{AnyVal} class describes value-type classes such as the primitive types
+\end{itemize}
+\begin{lstlisting}
+val name: String = "Matt"
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Tuples}
+\begin{itemize}
+\item Tuples are generalized ordered pairs
+\item Syntax sugar for instances of the \lstinline{TupleN} traits
+\item
+\begin{lstlisting}
+val foo: (String, Int, Boolean) =
+  ("Hello", 42, true)
+\end{lstlisting}
+\item Can access individual parts using the \lstinline{_N} methods or via destructuring:
+\item
+\begin{lstlisting}
+val (s, _, _) = foo
+val t = foo._2
+// s = "Hello", t = 42
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Methods}
+\begin{itemize}
+\item Methods are defined with \lstinline{def}
+\item Can omit the return type if it's inferable
+\item Must return something or \lstinline{Unit}
+\item Can define methods inside methods
+\item Can omit parenthesis for 0-arg methods
+\item Using \lstinline{return} is usually optional
+\end{itemize}
+\begin{lstlisting}
+def greet(name: String): Unit = {
+  def greeting(name: String): String =
+    s"Hello, $name" // string templates
+  println(greeting(name))
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Lambda Functions}
+\begin{itemize}
+\item Similar syntax to \lstinline{def}, though without a method name, and with an arrow
+\item Very similar syntax to Java, but replace \lstinline{->} with \lstinline{=>}
+\item Unlike Java, Scala lambdas can close over mutable variables
+\item Using \lstinline{return} in a lambda will return from the outer named function, not the
+lambda
+\item Syntactical sugar for an anonymous class of \lstinline{FunctionN} traits
+\item In Scala 2.12, lambdas were updated to be compatible with Java 8 lambdas
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Lambda Example}
+\begin{lstlisting}
+val add = (a: Int, b: Int): Int => a + b
+// equivalent to:
+val add = new Function2[Int, Int, Int] {
+  override def apply(a: Int, b: Int): Int =
+    a + b
+}
+val sum = add(1, 2)
+// equivalent to
+val sum = add.apply(1, 2)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Conditionals}
+\begin{itemize}
+\item An \lstinline{if} expression returns the last value of the matching branch similar
+to the ternary operator in Java
+\item
+\begin{lstlisting}
+def describe(n: Int): String =
+  if (n % 2 == 0) "even" else "odd"
+\end{lstlisting}
+\item Can still perform side effects and return \lstinline{Unit}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Loops}
+\begin{itemize}
+\item Use \lstinline$while (expr) { expr }$ for simple loops
+\item Use \lstinline{for} in a foreach loop or to transform collections using \lstinline{yield}
+\item Can combine with ranges to get an indexed for loop
+\end{itemize}
+\begin{lstlisting}
+val langs = List("Java", "Scala", "Clojure")
+val lower = for (lang <- langs)
+  yield lang.toLowerCase
+// equivalent to:
+val lower = langs.map(lang => lang.toLowerCase)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Pattern Matching}
+\begin{itemize}
+\item An expression can be matched in many ways:
+\item Type of expression
+\item Value of expression
+\item Types or values within the expression
+\item Uses \lstinline{match} and \lstinline{case}
+\item Additional predicates using \lstinline{if}
+\item Similar to a switch statement in Java
+\item Protip: a block made up of \lstinline{case} expressions is an anonymous match and can be
+used as a single-argument lambda function
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Pattern Matching Example}
+\begin{lstlisting}
+def describe(x: Any): String =
+  x match {
+    case null => "null"
+    case i: Int => i.toString
+    case s: String if s.nonEmpty => s
+    case Some(y) => describe(y)
+    case None => "none"
+    case _ => "unknown" // default case
+  }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Exceptions}
+\begin{itemize}
+\item All exceptions are unchecked in Scala
+\item Throw an exception with \lstinline{throw}
+\item Catch exceptions using \lstinline{try} and \lstinline{catch}
+\item A \lstinline{catch} block is a pattern match expression on the exception
+\end{itemize}
+\begin{lstlisting}
+def open(file: String) =
+  throw new Exception("File not found")
+try {
+  val f = open("foo.txt")
+} catch {
+  case e: Exception =>
+    println(e.getMessage)
+}
+\end{lstlisting}
+\end{frame}
+
+
+%% CLASSES
+\subsection{Classes}
+
+\begin{frame}{Traits}
+\begin{itemize}
+\item A \lstinline{trait} is similar to an interface in Java
+\item Defines abstract methods and fields
+\item Can also define concrete methods and fields
+\item Very similar to an abstract class but cannot have a constructor
+\item Classes can inherit from multiple traits, but only from one class
+\item Traits can be restricted to certain implementing types
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Trait Example}
+\begin{lstlisting}
+trait Logger {
+  def isEnabled(level: String): Boolean
+  def append(level: String, message: Any): Unit
+  def log(level: String, message: Any): Unit =
+    if (isEnabled(level)) append(level, message)
+  def error(message: Any): Unit =
+    log("ERROR", message)
+  def debug(message: Any): Unit =
+    log("DEBUG", message)
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Classes}
+\begin{itemize}
+\item A \lstinline{class} works rather similarly to Java classes
+\item Contains a main constructor and optionally other constructors named \lstinline{this}
+\item The body of the class (minus any \lstinline{def}s) is the constructor
+\item Fields can be exposed using \lstinline{val} and \lstinline{var} for read-only
+and read-write properties
+\item Can extend another class and several traits
+\item Use \lstinline{extends} to extend a class or implement a trait
+\item Use \lstinline{with} to add additional traits to mix in to the class
+\item Use \lstinline{override} on methods and variables overridden from parent
+\item Use \lstinline{lazy val} for values that aren't evaluated until first access
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Class Example}
+\begin{lstlisting}
+class StdoutLogger(levels: Map[String, Boolean])
+    extends Logger {
+  override def isEnabled(level: String): Boolean =
+    levels(level)
+  // marking as final prevents subclasses
+  // from overriding
+  final override def append(
+      level: String, message: Any): Unit =
+    println(s"$level: $message")
+}
+val logger = new StdoutLogger(
+  Map("ERROR" -> true, "DEBUG" -> false))
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Objects}
+\begin{itemize}
+\item Scala does not have a static keyword
+\item It does however have a singleton \lstinline{object} keyword
+\item An object is a class with only a single instance
+\item When named the same as a class, provides similar semantics to having static
+methods defined on the class itself
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Object Example}
+\begin{lstlisting}
+object Logger {
+  def apply(debug: Boolean, error: Boolean): Logger =
+    new StdoutLogger(Map(
+      "DEBUG" -> debug,
+      "ERROR" -> error
+    ))
+}
+val logger = Logger(false, true)
+logger.debug("Test")
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Case Classes}
+\begin{itemize}
+\item In Java, there is a lot of boilerplate to create a simple data class
+\item Using Lombok, we can avoid most of it by adding annotations like
+\lstinline{@Data}, \lstinline{@Wither}, \lstinline{@Builder}, etc., to the class
+\item In Scala, we can add \lstinline{case} to a \lstinline{class} to get
+similar functionality generated for us: toString, equals, hashCode, copy,
+apply, unapply, Scala-style getters for the constructor parameters, an all-args
+constructor, and some other goodies
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Case Class Example}
+\begin{lstlisting}
+case class Name(first: String, last: String)
+// automatic Name.apply created
+val john = Name("John", "Doe")
+// automatic Name.unapply created
+val Name(first, last) = john
+def isAnon(n: Name): Boolean = n match {
+  case Name(_, "Doe") => true
+  case _ => false
+}
+// automatic Name.copy like @Wither
+val jane = john.copy(first = "Jane")
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Generics}
+\begin{itemize}
+\item Unlike Java, Scala does not allow raw types
+\item Generic syntax uses square brackets instead of angled brackets
+\item For consistency, arrays use the same syntax as collections
+\item \lstinline{val xs: Array[Int] = Array(1, 2, 3)}
+\item Can specify how instances relate using generic type parameter by
+specifying the variance (similar to super/extends in Java)
+\item Can use type parameter bounds using \lstinline{>:} and \lstinline{<:}
+for superclass and subclass respectively
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Generic Example}
+\begin{lstlisting}
+// +A: if B extends A, then Bag[B] extends Bag[A]
+trait Bag[+A] {
+  // if B super A, then we widen the type
+  def add[B >: A](b: B): Bag[B]
+  def remove(p: A => Boolean): Bag[A]
+  // defining map, flatMap, and foreach allow this
+  // class to be used in various for expressions
+  def map[B](f: A => B): Bag[B]
+  def flatMap[B](f: A => Bag[B]): Bag[B]
+  def foreach(f: A => Unit): Unit
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Class and Method Parameters}
+\begin{itemize}
+\item The arguments to the primary constructor of a class can be considered the
+class's arguments similar to a method
+\item Arguments can be passed by name out of order, negating the need for builders:
+\begin{lstlisting}
+val log = Logger(error = true, debug = false)
+\end{lstlisting}
+\item Parameters can have a default value:
+\begin{lstlisting}
+def greet(name: String = "World") =
+  s"Hello, $name"
+val greeting1 = greet()
+val greeting2 = greet("Chicago")
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Repeated Parameters}
+\begin{itemize}
+\item Similar to varargs in Java, the last argument in a parameter list can be a
+repeated parameter
+\item Access the variable as a \lstinline{Seq[T]} collection class
+\item Expand a collection class to a repeated parameter using \lstinline{: _*} on the variable
+\end{itemize}
+\begin{lstlisting}
+def join(fields: String*): String =
+  fields.mkString(",")
+val csv1 = join("foo", "bar", "baz")
+val csv2 = join(List("foo", "bar"): _*)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Multiple Parameter Lists}
+\begin{itemize}
+\item A class or method can contain multiple parameter lists
+\item This syntax can be useful for partial function application
+\end{itemize}
+\begin{lstlisting}
+trait Foldable[A] {
+  def fold[B](init: B)(op: (B, A) => B)
+}
+val f: Foldable[Int] = ...
+f.fold(0)((sum, next) => sum + next)
+\end{lstlisting}
+\end{frame}
+
+
+%% IMPLICITS
+\subsection{Implicits}
+
+\begin{frame}[fragile]{Implicit Conversions}
+\begin{itemize}
+\item In many projects, common boilerplate code to convert from one type to another
+\item In Scala, we can create an implicit conversion to automatically convert types
+where applicable
+\item Implicits are a core feature of Scala that differentiate it from other languages
+\end{itemize}
+\begin{lstlisting}
+def foo(id: UUID): Unit = ...
+implicit def s2id(s: String): UUID =
+  UUID.fromString(s)
+val id = "cea3e50d-f894-47fe-a31b-0cb57c94bea5"
+foo(id)
+// expands to:
+foo(s2id(id))
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Implicit Classes}
+\begin{itemize}
+\item In order to add methods to third party classes, we can wrap the class and
+provide new methods
+\item Combined with an implicit conversion, we can use a shorthand syntax to make
+an implicit class
+\item An implicit class is a class with a single parameter with a generated implicit
+function to convert from the type of the parameter to the implicit class
+\end{itemize}
+\begin{lstlisting}
+implicit class IntOps(i: Int) {
+  def isEven: Boolean = i % 2 == 0
+}
+val q = 42.isEven
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{DSL Example}
+\begin{lstlisting}
+case class Module(group: String, module: String)
+implicit class Group(group: String) {
+  def %(artifact: String): Module =
+    Module(group, artifact)
+}
+val module = "org.apache.commons" % "commons-lang3"
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Implicit Parameters}
+\begin{itemize}
+\item Passing the same contextual information over and over again is repetitive
+\item Using implicit parameters along with implicit values helps reduce boilerplate
+\end{itemize}
+\begin{lstlisting}
+def fetch(query: String)
+  (implicit conn: Connection): Seq[Row] =
+  conn.query(query)
+implicit val c: Connection = ...
+val rows = fetch("select * from things")
+// expands to:
+val rows = fetch("select * from things")(c)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Implicit Context Bounds}
+\begin{itemize}
+\item Some types are used to provide context for another type such as
+\lstinline{Ordering[T]} for defining an ordering on a type
+\item We can provide context objects via implicit parameters
+\end{itemize}
+\begin{lstlisting}
+def min[A](a: A, b: A)
+  (implicit o: Ordering[A]): A =
+  o.min(a, b)
+// or we can add a context bound
+// and summon the implicit:
+def min[A: Ordering](a: A, b: A): A =
+  implicitly[Ordering[A]].min(a, b)
+\end{lstlisting}
+\end{frame}
+
+%%% SUMMARY
+\section*{Summary}
+
+\begin{frame}{Summary}
+\begin{itemize}
+\item Scala provides a small, consistent core language with lots of optional
+syntax sugar
+\item Works well with existing Java libraries
+\item Eliminates a lot of common boilerplate
+\item Java is slowly adopting old Scala features (lambda functions, streams, and
+eventually pattern matching), so why wait?
+\item This is only the basics; Scala provides a standard library with very rich
+collection classes, more syntax sugar for functional programming, and many
+production-ready libraries and frameworks
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Further Reading}
+\begin{itemize}
+\item \url{http://musigma.org/scala/2017/07/03/akka-cqrs.html}
+\item \url{https://github.com/jvz/akka-blog-example}
+\item \url{https://github.com/jvz/scala-for-java}
+\end{itemize}
+\end{frame}
+
+\end{document}
