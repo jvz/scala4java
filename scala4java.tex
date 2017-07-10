@@ -53,15 +53,31 @@
 
 \begin{frame}[fragile]{Variables}
 \begin{itemize}
-\item Use \lstinline{val} for unmodifiable variables
-\item Use \lstinline{var} for modifiable variables
+\item Variables are declared with \lstinline{val}
+\item The type of the variable can oftentimes be inferred by the compiler
 \item There are very little restrictions on allowed characters in identifiers
 \item Use the \lstinline{_} variable as a throwaway variable
 \end{itemize}
 \begin{lstlisting}
-var foo = "bar" // foo is inferred to be a String
-foo = "baz" // can reassign vars
+val foo = "bar" // foo is inferred to be a String
 \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Underscores}
+\begin{itemize}
+\item The \lstinline{_} character is pervasive in Scala
+\item In general, it means ``that thing, you know the one I'm talking about''
+\item Used for throwaway variables, wildcard imports, anonymous lambda parameters,
+eta expansion, possibly other Greek letters
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Semicolons}
+\begin{itemize}
+\item Where are all the semicolons?
+\item Answer: they're optional! Don't bother using them outside of very specific use cases.
+\item Scala infers semicolons in a much more sane fashion than JavaScript.
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Types}
@@ -103,7 +119,7 @@ val t = foo._2
 \item Must return something or \lstinline{Unit}
 \item Can define methods inside methods
 \item Can omit parenthesis for 0-arg methods
-\item Using \lstinline{return} is usually optional
+\item The last line(s) of reachable code in the method is the default return value
 \end{itemize}
 \begin{lstlisting}
 def greet(name: String): Unit = {
@@ -119,8 +135,6 @@ def greet(name: String): Unit = {
 \item Similar syntax to \lstinline{def}, though without a method name, and with an arrow
 \item Very similar syntax to Java, but replace \lstinline{->} with \lstinline{=>}
 \item Unlike Java, Scala lambdas can close over mutable variables
-\item Using \lstinline{return} in a lambda will return from the outer named function, not the
-lambda
 \item Syntactical sugar for an anonymous class of \lstinline{FunctionN} traits
 \item In Scala 2.12, lambdas were updated to be compatible with Java 8 lambdas
 \end{itemize}
@@ -128,12 +142,15 @@ lambda
 
 \begin{frame}[fragile]{Lambda Example}
 \begin{lstlisting}
-val add = (a: Int, b: Int): Int => a + b
-// equivalent to:
+// all equivalent:
+val add: (Int, Int) => Int = (a, b) => a + b
+val add: (Int, Int) => Int = _ + _
+val add = (_: Int) + (_: Int)
 val add = new Function2[Int, Int, Int] {
   override def apply(a: Int, b: Int): Int =
     a + b
 }
+// calling a lambda
 val sum = add(1, 2)
 // equivalent to
 val sum = add.apply(1, 2)
@@ -155,9 +172,8 @@ def describe(n: Int): String =
 
 \begin{frame}[fragile]{Loops}
 \begin{itemize}
-\item Use \lstinline$while (expr) { expr }$ for simple loops
 \item Use \lstinline{for} in a foreach loop or to transform collections using \lstinline{yield}
-\item Can combine with ranges to get an indexed for loop
+\item Can combine with ranges to get an indexed for loop (e.g., \lstinline{for (i <- 0 until 10)})
 \end{itemize}
 \begin{lstlisting}
 val langs = List("Java", "Scala", "Clojure")
