@@ -66,7 +66,7 @@ val foo = "bar" // foo is inferred to be a String
 \begin{itemize}
 \item The \lstinline{_} character is pervasive in Scala
 \item In general, it means ``that thing, you know the one I'm talking about''
-\item Used for throwaway variables in for expressions and case statements, wildcard
+\item Used for throwaway variables in patterns, wildcard
 imports, anonymous lambda parameters, eta expansion, possibly other Greek letters
 \end{itemize}
 \end{frame}
@@ -85,7 +85,7 @@ imports, anonymous lambda parameters, eta expansion, possibly other Greek letter
 \item Variable types can oftentimes be inferred by the compiler
 \item All types descend from \lstinline{Any} and are all supertypes of \lstinline{Nothing}
 \item The \lstinline{AnyRef} class is an alias for \lstinline{java.lang.Object}
-\item The \lstinline{AnyVal} class describes value-type classes such as the primitive types
+\item The \lstinline{AnyVal} class is special and describes value-type classes such as the primitive types
 \end{itemize}
 \begin{lstlisting}
 val name: String = "Matt"
@@ -115,10 +115,10 @@ val t = foo._2
 \begin{itemize}
 \item Methods are defined with \lstinline{def}
 \item Can omit the return type if it's inferable
-\item Must return something or \lstinline{Unit}
+\item The equivalent to void is \lstinline{Unit}
 \item Can define methods inside methods
 \item Can omit parenthesis for 0-arg methods
-\item The last line(s) of reachable code in the method is the default return value
+\item The last line(s) of reachable code in the method is the return value
 \end{itemize}
 \begin{lstlisting}
 def greet(name: String): Unit = {
@@ -129,13 +129,13 @@ def greet(name: String): Unit = {
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}[fragile]{Lambda Functions}
+\begin{frame}[fragile]{Lambdas}
 \begin{itemize}
 \item Similar syntax to \lstinline{def}, though without a method name, and with an arrow
 \item Very similar syntax to Java, but replace \lstinline{->} with \lstinline{=>}
 \item Unlike Java, Scala lambdas can close over mutable variables
 \item Syntactical sugar for an anonymous class of \lstinline{FunctionN} traits
-\item In Scala 2.12, lambdas were updated to be compatible with Java 8 lambdas
+\item In Scala 2.12, lambdas were updated to be compatible with Java 8 lambdas and can work with any SAMs
 \end{itemize}
 \end{frame}
 
@@ -158,7 +158,7 @@ val sum = add.apply(1, 2)
 
 \begin{frame}[fragile]{Conditionals}
 \begin{itemize}
-\item An \lstinline{if} expression returns the last value of the matching branch similar
+\item An \lstinline{if}/\lstinline{else} expression returns the last value of the matching branch similar
 to the ternary operator in Java
 \item
 \begin{lstlisting}
@@ -171,7 +171,7 @@ def describe(n: Int): String =
 
 \begin{frame}[fragile]{Loops}
 \begin{itemize}
-\item Use \lstinline{for} in a foreach loop or to transform collections using \lstinline{yield}
+\item Use \lstinline{for} comprehensions in a foreach loop or to transform collections using \lstinline{yield}
 \item Can combine with ranges to get an indexed for loop (e.g., \lstinline{for (i <- 0 until 10)})
 \end{itemize}
 \begin{lstlisting}
@@ -271,7 +271,6 @@ and read-write properties
 \item Use \lstinline{extends} to extend a class or implement a trait
 \item Use \lstinline{with} to add additional traits to mix in to the class
 \item Use \lstinline{override} on methods and variables overridden from parent
-\item Use \lstinline{lazy val} for values that aren't evaluated until first access
 \end{itemize}
 \end{frame}
 
