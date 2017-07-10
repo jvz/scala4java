@@ -56,7 +56,6 @@
 \item Variables are declared with \lstinline{val}
 \item The type of the variable can oftentimes be inferred by the compiler
 \item There are very little restrictions on allowed characters in identifiers
-\item Use the \lstinline{_} variable as a throwaway variable
 \end{itemize}
 \begin{lstlisting}
 val foo = "bar" // foo is inferred to be a String
@@ -67,8 +66,8 @@ val foo = "bar" // foo is inferred to be a String
 \begin{itemize}
 \item The \lstinline{_} character is pervasive in Scala
 \item In general, it means ``that thing, you know the one I'm talking about''
-\item Used for throwaway variables, wildcard imports, anonymous lambda parameters,
-eta expansion, possibly other Greek letters
+\item Used for throwaway variables in for expressions and case statements, wildcard
+imports, anonymous lambda parameters, eta expansion, possibly other Greek letters
 \end{itemize}
 \end{frame}
 
